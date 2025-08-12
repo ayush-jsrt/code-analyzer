@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import mysql.connector
 from mysql.connector import Error
 
 app = Flask(__name__)
+CORS(app)
 
 DB_CONFIG = {
     'host': '10.32.0.3',  # or '10.32.0.21'
