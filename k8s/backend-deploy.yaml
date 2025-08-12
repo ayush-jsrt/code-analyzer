@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-notes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-notes
+  template:
+    metadata:
+      labels:
+        app: flask-notes
+    spec:
+      containers:
+        - name: flask-notes
+          image: your-dockerhub-user/flask-notes:latest
+          env:
+            - name: DB_HOST
+              value: "10.32.0.21"   # MySQL pod/service IP or DNS
+            - name: DB_USER
+              value: "root"
+            - name: DB_PASS
+              value: "root"
+            - name: DB_NAME
+              value: "notes_db"
+            - name: DB_PORT
+              value: "3306"
+          ports:
+            - containerPort: 5000
