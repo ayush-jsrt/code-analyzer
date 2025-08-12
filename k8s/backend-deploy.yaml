@@ -15,17 +15,15 @@ spec:
     spec:
       containers:
         - name: flask-notes
-          image: your-dockerhub-user/flask-notes:latest
+          image: ayushjsrtia/code-analyzer-backend:latest
           env:
-            - name: DB_HOST
-              value: "10.32.0.21"   # MySQL pod/service IP or DNS
-            - name: DB_USER
-              value: "root"
-            - name: DB_PASS
-              value: "root"
-            - name: DB_NAME
-              value: "NOTES"
-            - name: DB_PORT
-              value: "3306"
+          - name: MYSQL_HOST
+            value: "10.32.0.3"
+          - name: MYSQL_USER
+            value: "root"
+          - name: MYSQL_PASSWORD
+            value: "root"
+          - name: MYSQL_DATABASE
+            value: "NOTES"
           ports:
             - containerPort: 5000
