@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: notes-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notes-frontend
+  template:
+    metadata:
+      labels:
+        app: notes-frontend
+    spec:
+      containers:
+        - name: notes-frontend
+          image: ayushjsrtia/code-analyzer-frontend:latest
+          ports:
+            - containerPort: 80
