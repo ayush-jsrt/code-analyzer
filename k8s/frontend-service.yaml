@@ -10,4 +10,4 @@ spec:
     - protocol: TCP
       port: 80       # Service port
       targetPort: 80 # Container port (Nginx)
-      nodePort: 30080 # External port (you can change this)
+      nodePort: 30100 # External port (you can change this)
