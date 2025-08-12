@@ -5,7 +5,7 @@ from mysql.connector import Error
 app = Flask(__name__)
 
 DB_CONFIG = {
-    'host': 'mysql-service',  # or '10.32.0.21'
+    'host': '10.32.0.3',  # or '10.32.0.21'
     'user': 'root',
     'password': 'root',
     'database': 'NOTES'
