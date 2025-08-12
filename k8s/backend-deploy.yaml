@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flask-notes
+  namespace: code-analyzer
 spec:
   replicas: 1
   selector:
@@ -23,7 +24,7 @@ spec:
             - name: DB_PASS
               value: "root"
             - name: DB_NAME
-              value: "notes_db"
+              value: "NOTES"
             - name: DB_PORT
               value: "3306"
           ports:
