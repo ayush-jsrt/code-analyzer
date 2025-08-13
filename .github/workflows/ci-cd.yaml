@@ -54,4 +54,9 @@ jobs:
   k8s-yaml-deploy:
     runs-on: self-hosted
 
-    
+    setups:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Apply Kubernetes manifests
+        run: kubectl apply -f k8s/
