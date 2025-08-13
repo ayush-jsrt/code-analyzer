@@ -54,7 +54,7 @@ jobs:
   k8s-yaml-deploy:
     runs-on: self-hosted
 
-    setups:
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
