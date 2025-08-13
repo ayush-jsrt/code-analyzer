@@ -56,3 +56,6 @@ jobs:
 
       - name: Apply Kubernetes manifests
         run: kubectl apply -f k8s/ -n code-analyzer
+
+      - name: Restart Kubernetes api-resources
+        run: kubectl rollout restart deployment,statefulset -n code-analyzer
