@@ -3,7 +3,11 @@ resource "aws_instance" "web" {
     instance_type = "t3.medium"
     key_name = "ayushnv"
 
-    user_data = "./runitup.sh"
+    user_data = file("./runitup.sh")
+
+    root_block_device {
+        volume_size = 50
+    }
 
     tags = {
         Name = "AyushViaTerraform"
