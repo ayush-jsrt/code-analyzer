@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
- 
+
+sudo hostnamectl set-hostname master
+
 sudo kubeadm init --kubernetes-version=1.26.15
  
 # Configure kubeconfig for ubuntu user
