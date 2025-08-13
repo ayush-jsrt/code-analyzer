@@ -60,7 +60,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: "600px", margin: "auto", padding: "1rem" }}>
-      <h1>📒 Notes App</h1>
+      <h1>📒 Notes App 📒</h1>
 
       <form onSubmit={handleSubmit} style={{ marginBottom: "1rem" }}>
         {!editingNote && (
