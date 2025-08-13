@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 DB_CONFIG = {
-    'host': '10.32.0.3',  # or '10.32.0.21'
+    'host': '10.32.0.7',  # or '10.32.0.21'
     'user': 'root',
     'password': 'root',
     'database': 'NOTES'
