@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "flask-notes.code-analyzer.svc.cluster.local:32000"; // Change if backend is hosted elsewhere
+const API_URL = "flask-notes.code-analyzer:32000"; // Change if backend is hosted elsewhere
 
 function App() {
   const [notes, setNotes] = useState([]);
