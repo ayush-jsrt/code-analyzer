@@ -13,10 +13,6 @@ spec:
       labels:
         app: flask-notes
     spec:
-      initContainers:
-        - name: wait-for-mysql
-          image: busybox
-          command: ['sh', '-c', 'until nc -z mysql.code-analyzer.svc.cluster.local 3306; do echo "Waiting for MySQL..."; sleep 2; done']
       containers:
         - name: flask-notes
           image: ayushjsrtia/code-analyzer-backend:latest

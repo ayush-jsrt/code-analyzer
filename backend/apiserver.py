@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import mysql.connector
 from mysql.connector import Error
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -13,8 +14,16 @@ DB_CONFIG = {
     'database': 'NOTES'
 }
 
-def get_connection():
-    return mysql.connector.connect(**DB_CONFIG)
+def get_connection(retries=30, delay=2):
+    for attempt in range(retries):
+        try:
+            conn = mysql.connector.connect(**DB_CONFIG)
+            if conn.is_connected():
+                return conn
+        except Error as e:
+            print(f"[DB] Attempt {attempt+1}/{retries} failed: {e}")
+        time.sleep(delay)
+    raise Exception("MySQL not available after retries")
 
 # Ensure table exists
 def init_db():
