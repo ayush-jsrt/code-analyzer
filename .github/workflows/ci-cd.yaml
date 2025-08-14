@@ -13,6 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Run Bandit Security Scan
+        run: |
+          pip install bandit
+          bandit apiserver.py -f html -o bandit-report-backend.html || true
+
+      - name: Upload Bandit Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report-backend
+          path: bandit-report-backend.html
+
       - name: Change to workdir
         working-directory: ./backend
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/code-analyzer-backend:latest .
