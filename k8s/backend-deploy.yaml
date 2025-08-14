@@ -17,13 +17,22 @@ spec:
         - name: flask-notes
           image: ayushjsrtia/code-analyzer-backend:latest
           env:
-          - name: MYSQL_HOST
-            value: "10.32.0.3"
-          - name: MYSQL_USER
-            value: "root"
-          - name: MYSQL_PASSWORD
-            value: "root"
-          - name: MYSQL_DATABASE
-            value: "NOTES"
+            - name: MYSQL_HOST
+              value: "10.32.0.3"
+            - name: MYSQL_USER
+              value: "root"
+            - name: MYSQL_PASSWORD
+              value: "root"
+            - name: MYSQL_DATABASE
+              value: "NOTES"
           ports:
             - containerPort: 5000
+          volumeMounts:
+            - name: aws-config
+              mountPath: /root/.aws
+              readOnly: true
+      volumes:
+        - name: aws-config
+          hostPath:
+            path: /root/.aws  # Location of AWS CLI config on the EC2 host
+            type: Directory
