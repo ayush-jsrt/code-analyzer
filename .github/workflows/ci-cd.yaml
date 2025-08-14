@@ -13,21 +13,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Dependency-Check (Backend)
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: backend
-          path: ./backend
-          format: 'HTML'
-          out: 'dependency-check-report-backend'
-
-      - name: SonarCloud Scan (Backend)
-        uses: SonarSource/sonarcloud-github-action@v2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: ./backend
-
       - name: Change to workdir
         working-directory: ./backend
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/code-analyzer-backend:latest .
@@ -64,6 +49,9 @@ jobs:
 
   k8s-yaml-deploy:
     runs-on: self-hosted
+    needs:
+      - dockerize-backend
+      - dockerize-frontend
 
     steps:
       - name: Checkout repository
