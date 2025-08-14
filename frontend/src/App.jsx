@@ -10,6 +10,7 @@ function App() {
   const [editingNote, setEditingNote] = useState(null);
   const [sonnetInput, setSonnetInput] = useState("");
   const [sonnetOutput, setSonnetOutput] = useState("");
+  const [lastAnalyzedText, setLastAnalyzedText] = useState("");
 
   // Fetch notes
   const fetchNotes = async () => {
@@ -25,18 +26,45 @@ function App() {
     fetchNotes();
   }, []);
 
-  const handleInvokeSonnet = async () => {
+  // Prepare analysis prompt
+  const buildAnalysisPrompt = (text) => {
+    return `
+You are an expert code and text reviewer.
+Analyze the following note or code strictly in a **point-wise** format.
+
+Requirements:
+1. Highlight key ideas or functionality.
+2. Detect and explain any errors or issues (syntax, logic, clarity).
+3. Suggest improvements or best practices.
+4. Avoid any irrelevant or unrelated information.
+5. Keep the tone professional and concise.
+
+Here is the content to analyze:
+---
+${text}
+---`;
+  };
+
+  const handleInvokeSonnet = async (text) => {
     try {
+      const prompt = buildAnalysisPrompt(text);
       const res = await axios.post(`${API_URL}/invoke`, {
-        inputText: sonnetInput
+        inputText: prompt
       });
-      setSonnetOutput(res.data.result); // Adjust if backend returns different format
+      setSonnetOutput(res.data.result);
+      setLastAnalyzedText(text);
     } catch (err) {
       console.error(err);
-      setSonnetOutput("Error invoking model");
+      setSonnetOutput("❌ Error invoking model");
     }
   };
 
+  // Reload the last analysis
+  const handleReloadAnalysis = () => {
+    if (lastAnalyzedText) {
+      handleInvokeSonnet(lastAnalyzedText);
+    }
+  };
 
   // Create or update note
   const handleSubmit = async (e) => {
@@ -74,9 +102,10 @@ function App() {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "auto", padding: "1rem" }}>
-      <h1>📒 Notes App 📒</h1>
+    <div style={{ maxWidth: "700px", margin: "auto", padding: "1rem" }}>
+      <h1>📒 Notes App + Claude Sonnet Analyzer</h1>
 
+      {/* Note Form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: "1rem" }}>
         {!editingNote && (
           <input
@@ -93,7 +122,7 @@ function App() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
-          style={{ width: "100%", marginBottom: "0.5rem" }}
+          style={{ width: "100%", height: "100px", marginBottom: "0.5rem" }}
         />
         <button type="submit">
           {editingNote ? "Update Note" : "Add Note"}
@@ -113,25 +142,41 @@ function App() {
         )}
       </form>
 
+      {/* Sonnet Analyzer */}
       <div style={{ marginTop: "2rem", padding: "1rem", border: "1px solid #ccc" }}>
-      <h2>🤖 Claude Sonnet 4</h2>
+        <h2>🤖 Claude Sonnet 4 — Note/Code Analyzer</h2>
         <textarea
-          placeholder="Ask something..."
+          placeholder="Paste your note or code here for analysis..."
           value={sonnetInput}
           onChange={(e) => setSonnetInput(e.target.value)}
-          style={{ width: "100%", marginBottom: "0.5rem" }}
+          style={{ width: "100%", height: "100px", marginBottom: "0.5rem" }}
         />
-        <button onClick={handleInvokeSonnet}>Send to Sonnet</button>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <button onClick={() => handleInvokeSonnet(sonnetInput)}>Analyze</button>
+          <button onClick={handleReloadAnalysis} disabled={!lastAnalyzedText}>
+            🔄 Reload Analysis
+          </button>
+        </div>
 
         {sonnetOutput && (
-          <div style={{ marginTop: "1rem", whiteSpace: "pre-wrap" }}>
-            <strong>Response:</strong>
+          <div
+            style={{
+              marginTop: "1rem",
+              padding: "0.75rem",
+              background: "#f9f9f9",
+              border: "1px solid #ddd",
+              borderRadius: "5px",
+              whiteSpace: "pre-wrap"
+            }}
+          >
+            <strong>Analysis:</strong>
             <p>{typeof sonnetOutput === "string" ? sonnetOutput : JSON.stringify(sonnetOutput, null, 2)}</p>
           </div>
         )}
       </div>
 
-      <ul style={{ listStyle: "none", padding: 0 }}>
+      {/* Notes List */}
+      <ul style={{ listStyle: "none", padding: 0, marginTop: "2rem" }}>
         {notes.map((note) => (
           <li
             key={note.name}
@@ -143,13 +188,11 @@ function App() {
           >
             <h3>{note.name}</h3>
             <p>{note.content}</p>
-            <button onClick={() => handleEdit(note)}>Edit</button>
-            <button
-              onClick={() => handleDelete(note.name)}
-              style={{ marginLeft: "0.5rem" }}
-            >
-              Delete
-            </button>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button onClick={() => handleEdit(note)}>Edit</button>
+              <button onClick={() => handleDelete(note.name)}>Delete</button>
+              <button onClick={() => handleInvokeSonnet(note.content)}>Analyze</button>
+            </div>
           </li>
         ))}
       </ul>
