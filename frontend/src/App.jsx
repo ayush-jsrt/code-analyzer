@@ -8,6 +8,8 @@ function App() {
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
   const [editingNote, setEditingNote] = useState(null);
+  const [sonnetInput, setSonnetInput] = useState("");
+  const [sonnetOutput, setSonnetOutput] = useState("");
 
   // Fetch notes
   const fetchNotes = async () => {
@@ -22,6 +24,19 @@ function App() {
   useEffect(() => {
     fetchNotes();
   }, []);
+
+  const handleInvokeSonnet = async () => {
+    try {
+      const res = await axios.post(`${API_URL}/invoke`, {
+        inputText: sonnetInput
+      });
+      setSonnetOutput(res.data.result); // Adjust if backend returns different format
+    } catch (err) {
+      console.error(err);
+      setSonnetOutput("Error invoking model");
+    }
+  };
+
 
   // Create or update note
   const handleSubmit = async (e) => {
@@ -97,6 +112,24 @@ function App() {
           </button>
         )}
       </form>
+
+      <div style={{ marginTop: "2rem", padding: "1rem", border: "1px solid #ccc" }}>
+      <h2>🤖 Claude Sonnet 4</h2>
+        <textarea
+          placeholder="Ask something..."
+          value={sonnetInput}
+          onChange={(e) => setSonnetInput(e.target.value)}
+          style={{ width: "100%", marginBottom: "0.5rem" }}
+        />
+        <button onClick={handleInvokeSonnet}>Send to Sonnet</button>
+
+        {sonnetOutput && (
+          <div style={{ marginTop: "1rem", whiteSpace: "pre-wrap" }}>
+            <strong>Response:</strong>
+            <p>{typeof sonnetOutput === "string" ? sonnetOutput : JSON.stringify(sonnetOutput, null, 2)}</p>
+          </div>
+        )}
+      </div>
 
       <ul style={{ listStyle: "none", padding: 0 }}>
         {notes.map((note) => (

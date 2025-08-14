@@ -3,9 +3,14 @@ from flask_cors import CORS
 import mysql.connector
 from mysql.connector import Error
 import time
+import boto3
+from botocore.exceptions import ClientError
 
 app = Flask(__name__)
 CORS(app)
+
+MODEL_ID = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+client = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 DB_CONFIG = {
     'host': 'mysql.code-analyzer.svc.cluster.local',  # or '10.32.0.21'
@@ -42,6 +47,30 @@ def init_db():
         conn.close()
     except Error as e:
         print("Error initializing DB:", e)
+
+@app.route('/invoke', methods=['POST'])
+def invoke_sonnet():
+    try:
+        data = request.get_json()
+        if not data or 'inputText' not in data:
+            return jsonify({"error": "Missing 'inputText' in request body"}), 400
+
+        payload = {
+            "inputText": data['inputText'],
+        }
+
+        response = client.invoke_model(modelId=MODEL_ID, body=json.dumps(payload))
+        result = json.loads(response["body"].read())
+
+        return jsonify({
+            "message": "Invocation successful",
+            "result": result
+        })
+
+    except ClientError as e:
+        return jsonify({"error": f"AWS ClientError: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/notes', methods=['GET'])
 def get_notes():
