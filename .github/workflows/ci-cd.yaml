@@ -16,7 +16,7 @@ jobs:
       - name: Run Bandit Security Scan
         run: |
           pip install bandit
-          bandit frontend/apiserver.py -f html -o bandit-report-backend.html || true
+          bandit backend/apiserver.py -f html -o bandit-report-backend.html || true
 
       - name: Upload Bandit Report
         uses: actions/upload-artifact@v4
