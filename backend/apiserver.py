@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 DB_CONFIG = {
-    'host': 'mysql.code-analyzer.svc.cluster.local:3306',  # or '10.32.0.21'
+    'host': 'mysql.code-analyzer.svc.cluster.local',  # or '10.32.0.21'
     'user': 'root',
     'password': 'root',
     'database': 'NOTES'
