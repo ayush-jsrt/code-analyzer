@@ -8,9 +8,9 @@ function App() {
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
   const [editingNote, setEditingNote] = useState(null);
-  const [analysisResults, setAnalysisResults] = useState({}); // Store analysis per note
+  const [analysisResult, setAnalysisResult] = useState("");
+  const [lastAnalyzedText, setLastAnalyzedText] = useState("");
 
-  // Fetch notes
   const fetchNotes = async () => {
     try {
       const res = await axios.get(`${API_URL}/notes`);
@@ -24,7 +24,6 @@ function App() {
     fetchNotes();
   }, []);
 
-  // Prepare analysis prompt
   const buildAnalysisPrompt = (text) => {
     return `
 You are an expert code and text reviewer.
@@ -43,27 +42,24 @@ ${text}
 ---`;
   };
 
-  const handleInvokeSonnet = async (noteName, text) => {
+  const handleInvokeSonnet = async (text) => {
     try {
       const prompt = buildAnalysisPrompt(text);
-      const res = await axios.post(`${API_URL}/invoke`, {
-        inputText: prompt
-      });
-
-      setAnalysisResults((prev) => ({
-        ...prev,
-        [noteName]: res.data.result
-      }));
+      const res = await axios.post(`${API_URL}/invoke`, { inputText: prompt });
+      setAnalysisResult(res.data.result);
+      setLastAnalyzedText(text);
     } catch (err) {
       console.error(err);
-      setAnalysisResults((prev) => ({
-        ...prev,
-        [noteName]: "❌ Error invoking model"
-      }));
+      setAnalysisResult("❌ Error invoking model");
     }
   };
 
-  // Create or update note
+  const handleReloadAnalysis = () => {
+    if (lastAnalyzedText) {
+      handleInvokeSonnet(lastAnalyzedText);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -81,14 +77,12 @@ ${text}
     }
   };
 
-  // Edit note
   const handleEdit = (note) => {
     setEditingNote(note.name);
     setName(note.name);
     setContent(note.content);
   };
 
-  // Delete note
   const handleDelete = async (noteName) => {
     try {
       await axios.delete(`${API_URL}/notes/${noteName}`);
@@ -102,7 +96,7 @@ ${text}
     <div style={{ maxWidth: "700px", margin: "auto", padding: "1rem" }}>
       <h1>📒 Notes App + Claude Sonnet Analyzer</h1>
 
-      {/* Note Form */}
+      {/* Note Form with Analysis */}
       <form onSubmit={handleSubmit} style={{ marginBottom: "1rem" }}>
         {!editingNote && (
           <input
@@ -119,24 +113,56 @@ ${text}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
-          style={{ width: "100%", height: "100px", marginBottom: "0.5rem" }}
+          style={{ width: "100%", height: "120px", marginBottom: "0.5rem" }}
         />
-        <button type="submit">
-          {editingNote ? "Update Note" : "Add Note"}
-        </button>
-        {editingNote && (
+
+        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+          <button type="button" onClick={() => handleInvokeSonnet(content)}>
+            Analyze
+          </button>
           <button
             type="button"
-            onClick={() => {
-              setEditingNote(null);
-              setName("");
-              setContent("");
-            }}
-            style={{ marginLeft: "0.5rem" }}
+            onClick={handleReloadAnalysis}
+            disabled={!lastAnalyzedText}
           >
-            Cancel
+            🔄 Reload Analysis
           </button>
+        </div>
+
+        {analysisResult && (
+          <div
+            style={{
+              marginTop: "0.5rem",
+              padding: "0.75rem",
+              background: "#f9f9f9",
+              border: "1px solid #ddd",
+              borderRadius: "5px",
+              whiteSpace: "pre-wrap"
+            }}
+          >
+            <strong>Analysis:</strong>
+            <p>{analysisResult}</p>
+          </div>
         )}
+
+        <div style={{ marginTop: "0.5rem" }}>
+          <button type="submit">
+            {editingNote ? "Update Note" : "Add Note"}
+          </button>
+          {editingNote && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingNote(null);
+                setName("");
+                setContent("");
+              }}
+              style={{ marginLeft: "0.5rem" }}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
 
       {/* Notes List */}
@@ -147,43 +173,18 @@ ${text}
             style={{
               border: "1px solid #ccc",
               padding: "0.5rem",
-              marginBottom: "1rem",
+              marginBottom: "0.5rem",
             }}
           >
             <h3>{note.name}</h3>
             <p>{note.content}</p>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button onClick={() => handleInvokeSonnet(note.name, note.content)}>
-                Analyze
-              </button>
-              <button
-                onClick={() => handleInvokeSonnet(note.name, note.content)}
-                disabled={!analysisResults[note.name]}
-              >
-                🔄 Reload Analysis
-              </button>
-            </div>
-
-            {/* Analysis Result */}
-            {analysisResults[note.name] && (
-              <div
-                style={{
-                  marginTop: "0.5rem",
-                  padding: "0.75rem",
-                  background: "#f9f9f9",
-                  border: "1px solid #ddd",
-                  borderRadius: "5px",
-                  whiteSpace: "pre-wrap"
-                }}
-              >
-                <strong>Analysis:</strong>
-                <p>
-                  {typeof analysisResults[note.name] === "string"
-                    ? analysisResults[note.name]
-                    : JSON.stringify(analysisResults[note.name], null, 2)}
-                </p>
-              </div>
-            )}
+            <button onClick={() => handleEdit(note)}>Edit</button>
+            <button
+              onClick={() => handleDelete(note.name)}
+              style={{ marginLeft: "0.5rem" }}
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
