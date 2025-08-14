@@ -8,9 +8,7 @@ function App() {
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
   const [editingNote, setEditingNote] = useState(null);
-  const [sonnetInput, setSonnetInput] = useState("");
-  const [sonnetOutput, setSonnetOutput] = useState("");
-  const [lastAnalyzedText, setLastAnalyzedText] = useState("");
+  const [analysisResults, setAnalysisResults] = useState({}); // Store analysis per note
 
   // Fetch notes
   const fetchNotes = async () => {
@@ -45,24 +43,23 @@ ${text}
 ---`;
   };
 
-  const handleInvokeSonnet = async (text) => {
+  const handleInvokeSonnet = async (noteName, text) => {
     try {
       const prompt = buildAnalysisPrompt(text);
       const res = await axios.post(`${API_URL}/invoke`, {
         inputText: prompt
       });
-      setSonnetOutput(res.data.result);
-      setLastAnalyzedText(text);
+
+      setAnalysisResults((prev) => ({
+        ...prev,
+        [noteName]: res.data.result
+      }));
     } catch (err) {
       console.error(err);
-      setSonnetOutput("❌ Error invoking model");
-    }
-  };
-
-  // Reload the last analysis
-  const handleReloadAnalysis = () => {
-    if (lastAnalyzedText) {
-      handleInvokeSonnet(lastAnalyzedText);
+      setAnalysisResults((prev) => ({
+        ...prev,
+        [noteName]: "❌ Error invoking model"
+      }));
     }
   };
 
@@ -142,57 +139,51 @@ ${text}
         )}
       </form>
 
-      {/* Sonnet Analyzer */}
-      <div style={{ marginTop: "2rem", padding: "1rem", border: "1px solid #ccc" }}>
-        <h2>🤖 Claude Sonnet 4 — Note/Code Analyzer</h2>
-        <textarea
-          placeholder="Paste your note or code here for analysis..."
-          value={sonnetInput}
-          onChange={(e) => setSonnetInput(e.target.value)}
-          style={{ width: "100%", height: "100px", marginBottom: "0.5rem" }}
-        />
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button onClick={() => handleInvokeSonnet(sonnetInput)}>Analyze</button>
-          <button onClick={handleReloadAnalysis} disabled={!lastAnalyzedText}>
-            🔄 Reload Analysis
-          </button>
-        </div>
-
-        {sonnetOutput && (
-          <div
-            style={{
-              marginTop: "1rem",
-              padding: "0.75rem",
-              background: "#f9f9f9",
-              border: "1px solid #ddd",
-              borderRadius: "5px",
-              whiteSpace: "pre-wrap"
-            }}
-          >
-            <strong>Analysis:</strong>
-            <p>{typeof sonnetOutput === "string" ? sonnetOutput : JSON.stringify(sonnetOutput, null, 2)}</p>
-          </div>
-        )}
-      </div>
-
       {/* Notes List */}
-      <ul style={{ listStyle: "none", padding: 0, marginTop: "2rem" }}>
+      <ul style={{ listStyle: "none", padding: 0 }}>
         {notes.map((note) => (
           <li
             key={note.name}
             style={{
               border: "1px solid #ccc",
               padding: "0.5rem",
-              marginBottom: "0.5rem",
+              marginBottom: "1rem",
             }}
           >
             <h3>{note.name}</h3>
             <p>{note.content}</p>
             <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button onClick={() => handleEdit(note)}>Edit</button>
-              <button onClick={() => handleDelete(note.name)}>Delete</button>
-              <button onClick={() => handleInvokeSonnet(note.content)}>Analyze</button>
+              <button onClick={() => handleInvokeSonnet(note.name, note.content)}>
+                Analyze
+              </button>
+              <button
+                onClick={() => handleInvokeSonnet(note.name, note.content)}
+                disabled={!analysisResults[note.name]}
+              >
+                🔄 Reload Analysis
+              </button>
             </div>
+
+            {/* Analysis Result */}
+            {analysisResults[note.name] && (
+              <div
+                style={{
+                  marginTop: "0.5rem",
+                  padding: "0.75rem",
+                  background: "#f9f9f9",
+                  border: "1px solid #ddd",
+                  borderRadius: "5px",
+                  whiteSpace: "pre-wrap"
+                }}
+              >
+                <strong>Analysis:</strong>
+                <p>
+                  {typeof analysisResults[note.name] === "string"
+                    ? analysisResults[note.name]
+                    : JSON.stringify(analysisResults[note.name], null, 2)}
+                </p>
+              </div>
+            )}
           </li>
         ))}
       </ul>
