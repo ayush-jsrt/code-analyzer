@@ -29,19 +29,3 @@ spec:
               value: "/usr/local/aws-cli:$PATH"  # include host AWS CLI in PATH
           ports:
             - containerPort: 5000
-          volumeMounts:
-            - name: aws-config
-              mountPath: /root/.aws
-              readOnly: true
-            - name: aws-cli
-              mountPath: /usr/local/aws-cli
-              readOnly: true
-      volumes:
-        - name: aws-config
-          hostPath:
-            path: /root/.aws       # AWS CLI config/credentials on host
-            type: Directory
-        - name: aws-cli
-          hostPath:
-            path: /home/ubuntu/aws/dist  # AWS CLI binary folder on host
-            type: Directory
