@@ -25,7 +25,5 @@ spec:
               value: "root"
             - name: MYSQL_DATABASE
               value: "NOTES"
-            - name: PATH
-              value: "/usr/local/aws-cli:$PATH"  # include host AWS CLI in PATH
           ports:
             - containerPort: 5000
