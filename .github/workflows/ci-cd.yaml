@@ -15,7 +15,7 @@ jobs:
 
       - name: Run Bandit Security Scan
         run: |
-          pip install bandit
+          pip install bandit -r backend/requirements.txt
           bandit backend/apiserver.py -f html -o bandit-report-backend.html || true
 
       - name: Upload Bandit Report
@@ -23,6 +23,17 @@ jobs:
         with:
           name: bandit-report-backend
           path: bandit-report-backend.html
+
+      - name: Run pip-audit for dependency vulnerabilities
+        run: |
+          pip install pip-audit
+          pip-audit -r backend/requirements.txt -f json -o pip-audit-report.json || true
+
+      - name: Upload SCA Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report-backend
+          path: pip-audit-report.json
 
       - name: Change to workdir
         working-directory: ./backend
