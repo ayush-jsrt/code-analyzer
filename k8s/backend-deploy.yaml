@@ -10,7 +10,7 @@ spec:
       app: flask-notes
   template:
     metadata:
-      labels:
+      labels:cfghxfh
         app: flask-notes
     spec:
       containers:
